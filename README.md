@@ -37,7 +37,11 @@ eg: /tmp/rundeck_job_status.py.log.2017-06-27,16.22
 
 #### 可添加到rundeck上做成一个job
 ![image](https://github.com/talenhao/RundeckJobResult/blob/master/img/RdJobResult.png?raw=true)
-任务位于rundeck执行平台in-jobs project的in/yunwei目录下
+
+邮件内容
+
+![image](https://github.com/talenhao/RundeckJobResult/blob/master/img/rd_mail.png?raw=true)
+
 ---
 订阅|说明
 :----| :----------
