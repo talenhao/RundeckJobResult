@@ -8,7 +8,7 @@ _rundeck 日报发送脚本使用指南_
 source ~/.virtualenvs/rundeck3.6/bin/activate
 
 
-###usage
+### usage
 ```bash
 
 用法：
@@ -27,7 +27,7 @@ eg: python3.6 rundeck_job_status.py -m talenhao@gmail.com,talenhao2@gmail.com,..
 
 ```
 
-###log文件	 	
+### log文件
 
 > /tmp/rundeck_job_status.py.log.${date},${hour.min}
 
@@ -35,7 +35,7 @@ eg: /tmp/rundeck_job_status.py.log.2017-06-27,16.22
 
 
 
-####可添加到rundeck上做成一个job
+#### 可添加到rundeck上做成一个job
 ![image](https://github.com/talenhao/RundeckJobResult/blob/master/img/RdJobResult.png?raw=true)
 任务位于rundeck执行平台in-jobs project的in/yunwei目录下
 ---
