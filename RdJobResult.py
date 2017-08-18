@@ -37,6 +37,12 @@ rundeck_server_protocol = 'http'
 rundeck_project = 'in-jobs'
 rundeck_token = 'Orbv4nQJ6vXJboj9LKTguQg7j5taRBJx'
 
+# smtplib send mail.修改成自己的正确信息.
+mail_host = "smtp.mailserver.talen"
+mail_user = "user@mailserver.talen"
+mail_pass = "FtAe+Zsfsfiiwoeowiewriworqo843098r092093284842kdoiewj3jijdw09e02r9w"
+from_addr = 'user@mailserver.talen'
+
 all_args = sys.argv[1:]
 usage = '''
 用法：
@@ -207,11 +213,6 @@ def send_mail(mailuser, msg):
     mmsg['Subject'] = 'Rundeck result %s.' % today
     mmsg['From'] = 'rundeck-server@in66.cc'
 
-    # smtplib send mail.
-    mail_host = "smtp.mailserver.talen"
-    mail_user = "user@mailserver.talen"
-    mail_pass = "FtAe+Zsfsfiiwoeowiewriworqo843098r092093284842kdoiewj3jijdw09e02r9w"
-    from_addr = 'user@mailserver.talen'
     # to_addr = ['talenhao@gmail.com']
     to_addr = mailuser.split(',')
     c_logger.debug("mail to : %r", to_addr)
