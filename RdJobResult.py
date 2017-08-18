@@ -3,11 +3,9 @@
 
 """
 后期提升：
-    ok: 邮件自发
-    多线程
-    过滤已经停止的任务
     2017.06.27: 修改使用html格式发送解决windows,linux字体显示格式不一致的问题。
     2017.07.15: 任务分类为never,failed,succeeded,running
+    2017.08.15: 过滤已经禁用的job
 """
 
 import os
@@ -27,11 +25,11 @@ from email.mime.text import MIMEText
 
 import tianfei_log
 
-__author__ = "Talen Hao(郝天飞)<talenhao@gmail.com>"
+__author__ = "Talen Hao(天飞)<talenhao@gmail.com>"
 __status__ = "product"
-__version__ = "2017.06.25"
+__last_date__ = "2017.08.18"
+__version__ = __last_date__
 __create_date__ = "2017.06.16"
-__last_date__ = "2017.06.19"
 
 rundeck_server_ip = '192.168.1.111'
 rundeck_server_port = '4440'
@@ -57,6 +55,7 @@ c_logger.debug("today is : %s", today)
 
 
 def get_options():
+    mail_user = ''
     if all_args:
         c_logger.debug("命令行参数是 %s", str(all_args))
     else:
@@ -88,7 +87,7 @@ def get_jobs_uuid():
     jobs_url_api_headers = {'x-rundeck-auth-token': rundeck_token, 'Accept': 'application/json'}
     # jobs_url_api_params = {'jobFilter': 'begin', 'scheduledFilter': 'true'}
     # jobs_url_api_params = {'scheduledFilter': 'true'}
-    jobs_url_api_params = {}
+    jobs_url_api_params = {'enabled': 'true'}
     jobs_list = requests.get(jobs_url_api, params=jobs_url_api_params, headers=jobs_url_api_headers)
     c_logger.debug("url: %s", jobs_list.url)
     c_logger.debug("respone code: %s", jobs_list)
@@ -179,6 +178,8 @@ def format_job_status(title, msg):
     job_status_list = PrettyTable(["Job name", "Status", "Started time", "Ended time"])
     job_status_list.align = "l"  # Left align
     job_status_list.padding_width = 1  # One space between column edges and contents (default)
+    job_status_list.header = True
+    # job_status_list.sortby = 'Job name'
     for name,item in msg.items():
         c_logger.debug('%r,%r', name, item)
         if item:
@@ -251,3 +252,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
