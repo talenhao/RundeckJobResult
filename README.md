@@ -29,13 +29,13 @@ log
 
 eg: /tmp/rundeck_job_status.py.log.2017-06-27,16.22
 
-可添加到rundeck上做成一个job
+####可添加到rundeck上做成一个job
 ![image](https://github.com/talenhao/RundeckJobResult/blob/master/img/RdJobResult.png?raw=true)
 任务位于rundeck执行平台in-jobs project的in/yunwei目录下
-常规订阅：	
+* 常规订阅：	
 如果需要添加日报订阅者，直接rundeck_result.start任务，option上添加订阅者邮箱即可，使用","号分割。
 
-临时订阅：	
+* 临时订阅：	
 如果是临时订阅，在任务运行界面mailto参数上点击"New Value"，输入订阅者邮件地址。
 
  
