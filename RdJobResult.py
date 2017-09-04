@@ -6,6 +6,7 @@
     2017.06.27: 修改使用html格式发送解决windows,linux字体显示格式不一致的问题。
     2017.07.15: 任务分类为never,failed,succeeded,running
     2017.08.15: 过滤已经禁用的job
+    2017.09.04: 添加Ancient字段
 """
 
 import os
@@ -27,7 +28,7 @@ import tianfei_log
 
 __author__ = "Talen Hao(天飞)<talenhao@gmail.com>"
 __status__ = "product"
-__last_date__ = "2017.08.18"
+__last_date__ = "2017.09.04"
 __version__ = __last_date__
 __create_date__ = "2017.06.16"
 
@@ -37,7 +38,8 @@ rundeck_server_protocol = 'http'
 rundeck_project = 'in-jobs'
 rundeck_token = 'Orbv4nQJ6vXJboj9LKTguQg7j5taRBJx'
 
-# smtplib send mail.修改成自己的正确信息.
+# smtplib send mail.
+# 修改成自己的正确信息.
 mail_host = "smtp.mailserver.talen"
 mail_user = "user@mailserver.talen"
 mail_pass = "FtAe+Zsfsfiiwoeowiewriworqo843098r092093284842kdoiewj3jijdw09e02r9w"
@@ -136,12 +138,20 @@ def jobs_status(uuids):
         c_logger.debug("running url: %r, content: %r", job_execution_running.url, job_execution_running.raw.read())
         job_running_result_count = int(root.findall("./executions")[0].get('count'))
         c_logger.debug("%s: job_running_result_count is %s", name, job_running_result_count)
+        
+        job_name = root.findtext("./executions/execution/job/name")
+        job_started = root.findtext("./executions/execution/date-started")
+
+        c_logger.debug("running: %r, %r",
+                       job_name,
+                       job_started)
+        
         if job_running_result_count > 0:
             jobs_status_running[name] = {}
-            jobs_status_running[name]['job_ended'] = 'running'
-            jobs_status_running[name]['job_name'] = root.findtext("./executions/execution/job/name")
-            jobs_status_running[name]['job_status'] = 'running'
-            jobs_status_running[name]['job_started'] = root.findtext("./executions/execution/date-started")
+            jobs_status_running[name]['job_name'] = job_name
+            jobs_status_running[name]['job_status'] = "running"
+            jobs_status_running[name]['job_started'] = job_started
+            jobs_status_running[name]['job_ended'] = "running"
         elif job_running_result_count == 0:
             # finished url request
             job_execution_url = '%s://%s:%s/api/1/job/%s/executions?max=1' % (
@@ -150,6 +160,20 @@ def jobs_status(uuids):
             c_logger.debug("finished url: %r, content: %r", job_execution.url, job_execution.raw.read())
             job_root = ET.fromstring(job_execution.text)
             root = job_root
+
+            job_name = root.findtext("./executions/execution/job/name")
+            job_started = root.findtext("./executions/execution/date-started")
+            job_ended = root.findtext("./executions/execution/date-ended")
+            try:
+                job_status = root.findall("./executions/execution")[0].get('status')
+            except:
+                job_status = None
+            c_logger.debug("executions: %r, %r, %r, %r",
+                           job_name,
+                           job_status,
+                           job_started,
+                           job_ended)
+
             job_result_count = int(root.findall("./executions")[0].get('count'))
             if job_result_count == 0:
                 c_logger.debug("job_result_count: %r, 从来没有执行过。", job_result_count)
@@ -160,36 +184,52 @@ def jobs_status(uuids):
                 jobs_status_never[name]['job_started'] = "Never"
             elif job_result_count > 0 and root.findall("./executions/execution")[0].get('status') == 'succeeded':
                 c_logger.debug("%r, %r, %r, %r",
-                               root.findtext("./executions/execution/date-ended"),
-                               root.findtext("./executions/execution/job/name"),
-                               root.findall("./executions/execution")[0].get('status'),
-                               root.findtext("./executions/execution/date-started"))
+                               job_name,
+                               job_status,
+                               job_started,
+                               job_ended)
                 jobs_status_succeeded[name] = {}
-                jobs_status_succeeded[name]['job_ended'] = root.findtext("./executions/execution/date-ended")
-                jobs_status_succeeded[name]['job_name'] = root.findtext("./executions/execution/job/name")
-                jobs_status_succeeded[name]['job_status'] = root.findall("./executions/execution")[0].get('status')
-                jobs_status_succeeded[name]['job_started'] = root.findtext("./executions/execution/date-started")
+                jobs_status_succeeded[name]['job_name'] = job_name
+                jobs_status_succeeded[name]['job_status'] = job_status
+                jobs_status_succeeded[name]['job_started'] = job_started
+                jobs_status_succeeded[name]['job_ended'] = job_ended
             else:
                 print(root.text)
                 jobs_status_failed[name] = {}
-                jobs_status_failed[name]['job_ended'] = root.findtext("./executions/execution/date-ended")
-                jobs_status_failed[name]['job_name'] = root.findtext("./executions/execution/job/name")
-                jobs_status_failed[name]['job_status'] = root.findall("./executions/execution")[0].get('status')
-                jobs_status_failed[name]['job_started'] = root.findtext("./executions/execution/date-started")
+                jobs_status_failed[name]['job_name'] = job_name
+                jobs_status_failed[name]['job_status'] = job_status
+                jobs_status_failed[name]['job_started'] = job_started
+                jobs_status_failed[name]['job_ended'] = job_ended
         c_logger.info(count)
     return jobs_status_running, jobs_status_succeeded, jobs_status_failed, jobs_status_never
 
 
 def format_job_status(title, msg):
-    job_status_list = PrettyTable(["Job name", "Status", "Started time", "Ended time"])
+    job_status_list = PrettyTable(["Job name", "Status", "Started time", "Ended time", "Ancient"])
     job_status_list.align = "l"  # Left align
     job_status_list.padding_width = 1  # One space between column edges and contents (default)
     job_status_list.header = True
-    # job_status_list.sortby = 'Job name'
+    job_status_list.sortby = 'Ended time'
+    job_status_list.reversesort = True
     for name,item in msg.items():
         c_logger.debug('%r,%r', name, item)
         if item:
-            job_status_list.add_row([item['job_name'], item['job_status'], item['job_started'], item['job_ended']])
+            c_logger.debug("job_ended is: {}".format(item["job_ended"]))
+            if item['job_ended'] not in ["Never execution.", "running"]:
+                ended_to_time = datetime.datetime.strptime(item["job_ended"], '%Y-%m-%dT%H:%M:%SZ')
+                c_logger.debug("ended_to_time is {}".format(ended_to_time))
+                old_days = datetime.datetime.now() - ended_to_time
+                c_logger.debug("old_days is {}, {}".format(old_days, old_days.days))
+                if old_days.days > 30:
+                    job_status_list.add_row(
+                            [item['job_name'], item['job_status'], item['job_started'], item['job_ended'], "Ancient"])
+                else:
+                    job_status_list.add_row(
+                            [item['job_name'], item['job_status'], item['job_started'], item['job_ended'], "Regular"])
+
+            else:
+                job_status_list.add_row(
+                        [item['job_name'], item['job_status'], item['job_started'], item['job_ended'], "Regular"])
     message = "%s" % (title + job_status_list.get_html_string(format=True))
     c_logger.debug('message: %r', message)
     return message
