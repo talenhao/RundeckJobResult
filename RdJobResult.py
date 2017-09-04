@@ -45,6 +45,9 @@ mail_user = "user@mailserver.talen"
 mail_pass = "FtAe+Zsfsfiiwoeowiewriworqo843098r092093284842kdoiewj3jijdw09e02r9w"
 from_addr = 'user@mailserver.talen'
 
+# 老任务执行
+ancient_day = 10
+
 all_args = sys.argv[1:]
 usage = '''
 用法：
@@ -183,11 +186,6 @@ def jobs_status(uuids):
                 jobs_status_never[name]['job_status'] = "Never"
                 jobs_status_never[name]['job_started'] = "Never"
             elif job_result_count > 0 and root.findall("./executions/execution")[0].get('status') == 'succeeded':
-                c_logger.debug("%r, %r, %r, %r",
-                               job_name,
-                               job_status,
-                               job_started,
-                               job_ended)
                 jobs_status_succeeded[name] = {}
                 jobs_status_succeeded[name]['job_name'] = job_name
                 jobs_status_succeeded[name]['job_status'] = job_status
@@ -220,7 +218,7 @@ def format_job_status(title, msg):
                 c_logger.debug("ended_to_time is {}".format(ended_to_time))
                 old_days = datetime.datetime.now() - ended_to_time
                 c_logger.debug("old_days is {}, {}".format(old_days, old_days.days))
-                if old_days.days > 30:
+                if old_days.days > ancient_day:
                     job_status_list.add_row(
                             [item['job_name'], item['job_status'], item['job_started'], item['job_ended'], "Ancient"])
                 else:
